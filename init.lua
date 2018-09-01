@@ -1,36 +1,44 @@
 better_nametags = {}
 better_nametags.allowSneak=true
-better_nametags.privilegeColors=true
-better_nametags.playerColor={a=255, r=200, g=200, b=200}
-better_nametags.adminColor={a=255, r=255, g=128, b=128}
-better_nametags.hostColor="#5555FF"
+better_nametags.enableCustomTags=true
+better_nametags.tags = {}
 better_nametags.players = {}
 better_nametags.sneakingPlayers = {}
+better_nametags.alias = {}
 
-local function listPlayers(name, _) 
-	local onlineCount = 0
-	onlineCount = #(minetest.get_connected_players())
-	local listString = ""..onlineCount.." Online: "
-	local foundPlayer = false
-	local iterated=1
-	for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
-		listString=listString..connectedPlayer:get_player_name()
-		if iterated < onlineCount then
-			listString=listString..", "
-		end
-		iterated=iterated+1
-	end
-	core.chat_send_player(name, listString)
+better_nametags.register_tag = function(tagName, color, checkFunction, rankWeight) 
+	better_nametags.tags[tagName] = {
+		title = tagName,
+		Color = color,
+		has = checkFunction,
+		weight = rankWeight
+	}
 end
 
-minetest.register_chatcommand("list", {
+modpath=minetest.get_modpath("better_nametags")
+dofile(modpath.."/tag_types.lua")
+
+minetest.register_chatcommand("players", {
 	description = "List all players currently online.",
-	func = listPlayers,
+	func = function(name, _) 
+		local onlineCount = 0
+		onlineCount = #(minetest.get_connected_players())
+		local listString = ""..onlineCount.." Online: "
+		local foundPlayer = false
+		local iterated=1
+		for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
+			listString=listString..connectedPlayer:get_player_name()
+			if iterated < onlineCount then
+				listString=listString..", "
+			end
+			iterated=iterated+1
+		end
+		core.chat_send_player(name, listString)
+	end
 	
 })
 
 minetest.register_entity("better_nametags:nametag", {
-	--Don't use "set_attach", it creates a weird effect where the player will see their nametag underground
 	visual = "sprite",	
 	textures = {"null.png"},
 	immortal = true,
@@ -45,10 +53,12 @@ minetest.register_entity("better_nametags:nametag", {
 		end
 	end,
 })
-minetest.register_on_leaveplayer(function(player)
+
+minetest.register_on_joinplayer(function(player)
 	better_nametags.players[player:get_player_name()] = false
 	better_nametags.sneakingPlayers[player:get_player_name()] = false
 end)
+
 minetest.register_on_leaveplayer(function(player, _)
 	if better_nametags.players[player:get_player_name()] then
 		table.remove(better_nametags.players, player:get_player_name())
@@ -70,13 +80,16 @@ minetest.register_globalstep(function(dtime)
 				})
 				local pos = player:get_pos()
 				local nametagEntity = minetest.add_entity(pos, "better_nametags:nametag")
-				local tagColor = better_nametags.playerColor
-				if better_nametags.privilegeColors then
-					if minetest.check_player_privs(player, {privs=true}) then
-						tagColor = better_nametags.adminColor
-					end
-					if minetest.check_player_privs(player, {server=true}) then
-						tagColor = better_nametags.hostColor
+				local tagColor = "#FFFFFF"
+				local highestWeight = -1
+				if better_nametags.enableCustomTags then
+					for _,tag in pairs(better_nametags.tags) do
+						if tag.weight > highestWeight then
+							if tag.has(player) then
+								tagColor = tag.Color
+								highestWeight = tag.weight
+							end
+						end
 					end
 				end
 				nametagEntity:set_nametag_attributes({
