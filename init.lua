@@ -30,6 +30,7 @@ minetest.register_chatcommand("list", {
 })
 
 minetest.register_entity("better_nametags:nametag", {
+	--Don't use "set_attach", it creates a weird effect where the player will see their nametag underground
 	visual = "sprite",	
 	textures = {"null.png"},
 	immortal = true,
