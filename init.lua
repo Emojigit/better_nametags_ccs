@@ -60,12 +60,18 @@ minetest.register_on_joinplayer(function(player)
 end)
 
 minetest.register_on_leaveplayer(function(player, _)
-	if better_nametags.players[player:get_player_name()] then
-		table.remove(better_nametags.players, player:get_player_name())
+	local player_name = player:get_player_name()
+	local remainingPlayers = {}
+	local remainingPlayersSneaking = {}
+	for _, online in ipairs(minetest.get_connected_players()) do
+		if online ~= player_name then
+			remainingPlayers[online] = better_nametags.players[online:get_player_name()]
+			remainingPlayersSneaking[online] = better_nametags.sneakingPlayers[online:get_player_name()]
+			
+		end
 	end
-	if better_nametags.sneakingPlayers[player:get_player_name()] then
-		table.remove(better_nametags.sneakingPlayers, player:get_player_name())
-	end
+	better_nametags.players = remainingPlayers
+	better_nametags.sneakingPlayers = remainingPlayersSneaking
 end)
 
 minetest.register_globalstep(function(dtime) 
