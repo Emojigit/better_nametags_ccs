@@ -103,6 +103,7 @@ minetest.register_globalstep(function(dtime)
 					color = tagColor
 				})
 				better_nametags.players[player_name] = true
+                --I would use set_attach(), but it causes a glitch where the entity's nametag is stuck at (0,0,0) when viewed by the attached player
 			end
 			
 			if player:get_player_control().sneak and better_nametags.allowSneak then
