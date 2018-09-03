@@ -64,9 +64,9 @@ minetest.register_on_leaveplayer(function(player, _)
 	local remainingPlayers = {}
 	local remainingPlayersSneaking = {}
 	for _, online in ipairs(minetest.get_connected_players()) do
-		if online ~= player_name then
-			remainingPlayers[online] = better_nametags.players[online:get_player_name()]
-			remainingPlayersSneaking[online] = better_nametags.sneakingPlayers[online:get_player_name()]
+		if online:get_player_name() ~= player_name then
+			remainingPlayers[online:get_player_name()] = better_nametags.players[online:get_player_name()]
+			remainingPlayersSneaking[online:get_player_name()] = better_nametags.sneakingPlayers[online:get_player_name()]
 			
 		end
 	end
