@@ -4,14 +4,24 @@ better_nametags.enableCustomTags=true
 better_nametags.tags = {}
 better_nametags.players = {}
 better_nametags.sneakingPlayers = {}
-better_nametags.alias = {}
+better_nametags.playerTags = {}
 
-better_nametags.register_tag = function(tagName, color, checkFunction, rankWeight) 
+local defaultNameFunction = function(player) return player:get_player_name() end
+local defaultCheckFunction= function(player) return false end
+
+better_nametags.register_tag = function(tagName, color, checkFunction, nameFunction, rankWeight) 
+	if nameFunction == nil then
+		nameFunction = defaultNameFunction
+	end
+	if checkFunction == nil then
+		checkFunction = defaultCheckFunction
+	end
 	better_nametags.tags[tagName] = {
 		title = tagName,
 		Color = color,
 		has = checkFunction,
-		weight = rankWeight
+		getName = nameFunction,
+		weight = rankWeight,
 	}
 end
 
@@ -42,14 +52,19 @@ minetest.register_entity("better_nametags:nametag", {
 	visual = "sprite",	
 	textures = {"null.png"},
 	immortal = true,
+	targetPlayer = "",
+	tagType = "",
 	collisionbox = {0.0,0.0,0.0,0.0,0.0,0.0},
 	on_step = function(self, _)
-		if not better_nametags.players[self.object:get_nametag_attributes().text] then
-			self.object:remove()
-		elseif minetest.get_player_by_name(self.object:get_nametag_attributes().text) then
-			local pos=minetest.get_player_by_name(self.object:get_nametag_attributes().text):get_pos()
-			pos.y=pos.y+1.1
-			self.object:move_to(pos, false)
+		local player_name = self.object:get_luaentity().targetPlayer
+		if player_name ~= "" then
+			if better_nametags.playerTags[player_name] ~= self.object:get_luaentity().tagType or not better_nametags.players[player_name] then
+				self.object:remove()
+			elseif minetest.get_player_by_name(player_name) then
+				local pos=minetest.get_player_by_name(player_name):get_pos()
+				pos.y=pos.y+1.1
+				self.object:move_to(pos, false)
+			end
 		end
 	end,
 })
@@ -62,47 +77,43 @@ end)
 minetest.register_on_leaveplayer(function(player, _)
 	local player_name = player:get_player_name()
 	local remainingPlayers = {}
+	local remainingPlayerTags = {}
 	local remainingPlayersSneaking = {}
 	for _, online in ipairs(minetest.get_connected_players()) do
 		if online:get_player_name() ~= player_name then
 			remainingPlayers[online:get_player_name()] = better_nametags.players[online:get_player_name()]
+			remainingPlayerTags[online:get_player_name()] = better_nametags.playerTags[online:get_player_name()]
 			remainingPlayersSneaking[online:get_player_name()] = better_nametags.sneakingPlayers[online:get_player_name()]
 			
 		end
 	end
 	better_nametags.players = remainingPlayers
+	better_nametags.playerTags = remainingPlayerTags
 	better_nametags.sneakingPlayers = remainingPlayersSneaking
+end)
+
+minetest.register_on_dieplayer(function(player)
+	better_nametags.players[player:get_player_name()] = false
+	better_nametags.sneakingPlayers[player:get_player_name()] = false
+	better_nametags.playerTags[player:get_player_name()] = ""
 end)
 
 minetest.register_globalstep(function(dtime) 
 	for _, player in ipairs(minetest.get_connected_players()) do
 		if player then
 			local player_name = player:get_player_name()
+			local tag = ""
+			local highestWeight = -1
 			
-			if not (better_nametags.players[player_name] or better_nametags.sneakingPlayers[player_name]) then
-				player:set_nametag_attributes({
-					text = "",
-					color = {a = 0, r = 0, g = 0, b = 0}
-				})
-				local pos = player:get_pos()
-				local nametagEntity = minetest.add_entity(pos, "better_nametags:nametag")
-				local tagColor = "#FFFFFF"
-				local highestWeight = -1
-				if better_nametags.enableCustomTags then
-					for _,tag in pairs(better_nametags.tags) do
-						if tag.weight > highestWeight then
-							if tag.has(player) then
-								tagColor = tag.Color
-								highestWeight = tag.weight
-							end
+			if better_nametags.enableCustomTags then
+				for _,registeredTag in pairs(better_nametags.tags) do
+					if registeredTag.weight > highestWeight then
+						if registeredTag.has(player) then
+							tag = registeredTag.title
+							highestWeight = registeredTag.weight
 						end
 					end
 				end
-				nametagEntity:set_nametag_attributes({
-					text = player_name,
-					color = tagColor
-				})
-				better_nametags.players[player_name] = true --I would use set_attach(), but it causes a glitch where the entity's nametag is stuck at (0,0,0) when viewed by the attached player
 			end
 			
 			if player:get_player_control().sneak and better_nametags.allowSneak then
@@ -110,6 +121,34 @@ minetest.register_globalstep(function(dtime)
 				better_nametags.sneakingPlayers[player_name] = true
 			else
 				better_nametags.sneakingPlayers[player_name] = false
+			end
+			
+			if (tag ~= better_nametags.playerTags[player_name] or not better_nametags.players[player_name]) and not better_nametags.sneakingPlayers[player_name] then
+				player:set_nametag_attributes({
+					text = "",
+					color = {a = 0, r = 0, g = 0, b = 0}
+				})
+				local pos = player:get_pos()
+				local nametagEntity = minetest.add_entity(pos, "better_nametags:nametag")
+				local tagColor = "#FFFFFF"
+				local tagName = player:get_player_name()
+				nametagEntity:get_luaentity().tagType = ""
+				
+				if better_nametags.tags[tag] then
+					tagName = better_nametags.tags[tag].getName(player)
+					tagColor = better_nametags.tags[tag].Color
+					highestWeight = better_nametags.tags[tag].weight
+				end
+				
+				nametagEntity:get_luaentity().tagType = tag
+				better_nametags.playerTags[player_name] = tag
+				
+				nametagEntity:set_nametag_attributes({
+					text = tagName,
+					color = tagColor
+				})
+				nametagEntity:get_luaentity().targetPlayer = player_name
+				better_nametags.players[player_name] = true --I would use set_attach(), but it causes a glitch where the entity's nametag is stuck at (0,0,0) when viewed by the attached player
 			end
 		end
 	end
