@@ -34,7 +34,6 @@ minetest.register_chatcommand("players", {
 		local onlineCount = 0
 		onlineCount = #(minetest.get_connected_players())
 		local listString = ""..onlineCount.." Online: "
-		local foundPlayer = false
 		local iterated=1
 		for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
 			local tag = better_nametags.tags[better_nametags.playerTags[connectedPlayer:get_player_name()]]
