@@ -37,9 +37,12 @@ minetest.register_chatcommand("players", {
 		local foundPlayer = false
 		local iterated=1
 		for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
-			listString=listString..connectedPlayer:get_player_name()
-			if iterated < onlineCount then
-				listString=listString..", "
+			local tag = better_nametags.tags[better_nametags.playerTags[connectedPlayer:get_player_name()]]
+			if tag then
+				listString=listString..tag.getName(connectedPlayer)
+				if iterated < onlineCount then
+					listString=listString..", "
+				end
 			end
 			iterated=iterated+1
 		end
