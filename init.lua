@@ -31,9 +31,7 @@ dofile(modpath.."/tag_types.lua")
 minetest.register_chatcommand("players", {
 	description = "List all players currently online.",
 	func = function(name, _) 
-		local onlineCount = 0
-		onlineCount = #(minetest.get_connected_players())
-		local listString = ""..onlineCount.." Online: "
+		local listString = ""..#(minetest.get_connected_players()).." Online: "
 		local iterated=1
 		for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
 			local tag = better_nametags.tags[better_nametags.playerTags[connectedPlayer:get_player_name()]]
