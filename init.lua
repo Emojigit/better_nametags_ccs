@@ -59,9 +59,10 @@ minetest.register_entity("better_nametags:nametag", {
 	immortal = true,
 	targetPlayer = "",
 	tagType = "",
+	static_save = false,
 	collisionbox = {0.0,0.0,0.0,0.0,0.0,0.0},
 	on_step = function(self, _)
-		local player_name = self.object:get_luaentity().targetPlayer
+		local player_name = self.targetPlayer
 		if player_name ~= "" then
 			if better_nametags.playerTags[player_name] ~= self.tagType or not better_nametags.players[player_name] then
 				self.object:remove()
