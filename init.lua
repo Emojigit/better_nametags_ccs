@@ -130,7 +130,7 @@ minetest.register_globalstep(function(dtime)
 			
 			if (tag ~= better_nametags.playerTags[player_name] or not better_nametags.players[player_name]) and not better_nametags.sneakingPlayers[player_name] then
 				player:set_nametag_attributes({
-					text = "",
+					text = " ",
 					color = {a = 0, r = 0, g = 0, b = 0}
 				})
 				local pos = player:get_pos()
