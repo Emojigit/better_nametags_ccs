@@ -40,9 +40,11 @@ minetest.register_chatcommand("players", {
 			local tag = better_nametags.tags[better_nametags.playerTags[connectedPlayer:get_player_name()]]
 			if tag then
 				listString=listString..tag.getName(connectedPlayer)
-				if iterated < onlineCount then
-					listString=listString..", "
-				end
+			else
+				listString=listString..connectedPlayer:get_player_name()
+			end
+			if iterated < onlineCount then
+				listString=listString..", "
 			end
 			iterated=iterated+1
 		end
