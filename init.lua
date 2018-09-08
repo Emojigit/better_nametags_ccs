@@ -31,7 +31,8 @@ dofile(modpath.."/tag_types.lua")
 minetest.register_chatcommand("players", {
 	description = "List all players currently online.",
 	func = function(name, _) 
-		local listString = ""..#(minetest.get_connected_players()).." Online: "
+		local onlineCount = #(minetest.get_connected_players())
+		local listString = ""..onlineCount.." Online: "
 		local iterated=1
 		for _,connectedPlayer in ipairs(minetest.get_connected_players()) do
 			local tag = better_nametags.tags[better_nametags.playerTags[connectedPlayer:get_player_name()]]
@@ -75,6 +76,7 @@ minetest.register_entity("better_nametags:nametag", {
 minetest.register_on_joinplayer(function(player)
 	better_nametags.players[player:get_player_name()] = false
 	better_nametags.sneakingPlayers[player:get_player_name()] = false
+	better_nametags.playerTags[player:get_player_name()] = nil
 end)
 
 minetest.register_on_leaveplayer(function(player, _)
@@ -93,12 +95,6 @@ minetest.register_on_leaveplayer(function(player, _)
 	better_nametags.players = remainingPlayers
 	better_nametags.playerTags = remainingPlayerTags
 	better_nametags.sneakingPlayers = remainingPlayersSneaking
-end)
-
-minetest.register_on_dieplayer(function(player)
-	better_nametags.players[player:get_player_name()] = false
-	better_nametags.sneakingPlayers[player:get_player_name()] = false
-	better_nametags.playerTags[player:get_player_name()] = ""
 end)
 
 minetest.register_globalstep(function(dtime) 
