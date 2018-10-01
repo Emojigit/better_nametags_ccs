@@ -38,3 +38,15 @@ better_nametags.register_tag(
 	end,
 	100
 )
+
+better_nametags.register_tag(
+	"sneaking", 
+	"#00000000",
+	function(player) 
+		return player:get_player_control().sneak
+	end, 
+	function(player) 
+		return " "
+	end,
+	1e309
+)
