@@ -75,8 +75,6 @@ minetest.register_entity("better_nametags:nametag", {
 				
 				local tag = ""
 				local highestWeight = -1
-				local tagColor = "#FFFFFF"
-				local tagName = player_name
 			
 				for _,registeredTag in pairs(better_nametags.tags) do
 					if registeredTag.weight > highestWeight then
@@ -86,7 +84,10 @@ minetest.register_entity("better_nametags:nametag", {
 						end
 					end
 				end
-				if self.tagType == tag then return end
+				
+				if tag == better_nametags.players[player_name] and better_nametags.tags[tag].getName(player) == self.object:get_nametag_attributes().text then return end
+				local tagColor = "#FFFFFF"
+				local tagName = player_name
 				if better_nametags.tags[tag] then
 					tagName = better_nametags.tags[tag].getName(player)
 					tagColor = better_nametags.tags[tag].Color
