@@ -40,6 +40,20 @@ better_nametags.register_tag(
 )
 
 better_nametags.register_tag(
+	"witchcraft_invisible", 
+	"#00000000",
+	function(player) 
+		if not invisibility then return false end
+		if invisibility[player:get_player_name()] then return true end
+		return false
+	end, 
+	function(player) 
+		return " " 
+	end,
+	150
+)
+
+better_nametags.register_tag(
 	"sneaking", 
 	"#00000000",
 	function(player) 
