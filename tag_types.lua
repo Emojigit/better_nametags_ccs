@@ -1,19 +1,46 @@
+--[[
 better_nametags.register_tag(
 	"default", 
-	"#BBBBBB", 
+	"#DDDDDD", 
 	function(_) return true end, 
-	nil,
+	function(player) return (player:get_player_name().." ("..(player:get_hp()/2).." ♥)") end,
 	0
 )
 
 better_nametags.register_tag(
-	"lowhealth", --Name of the color, must be unique, can overwrite.
-	"#DD0000", --Actual color. Hexidecimal value, or {r=r,g=g,b=b,a=a} table can work here
-	function(player) --A boolean function with one parameter that will recieve a player: "true" means the player meets the criteria for having their nametag be this color
-		return (player:get_hp() < 5)
+	"lowhealth", 
+	"#DD0000", 
+	function(player) 
+		return (player:get_hp() < 8)
 	end, 
-	nil, --Name modifier. Setting to nil will use the default << function(player) return player:get_player_name() end >>
-	-1 -- Weight of the color. When a player meets multiple colors' criteria, the highest weighted color will apply. Negative values disable the color entirely
+	function(player) return (player:get_player_name().." ("..(player:get_hp()/2).." ♥)") end,
+	2 
+)
+
+better_nametags.register_tag(
+	"midhealth",
+	"#EBE18F",
+	function(player)
+		return (player:get_hp() < 13)
+	end, 
+	function(player) return (player:get_player_name().." ("..(player:get_hp()/2).." ♥)") end,
+	1 
+)]]
+better_nametags.register_tag(
+	"default", 
+	--Unique name of the tag, overwrites if the name already exists.
+	"#DDDDDD", 
+	--Color. Hexidecimal value, ideally
+	function(_) return true end, 
+	-- A boolean function with one parameter that will recieve a player: 
+	-- "true" means the player meets the criteria for having their nametag be this
+	nil,
+	-- getName function. If nil, this will use the default:
+	-- function(player) return player:get_player_name() end
+	0
+	-- Weight of the tag. 
+	-- When a player meets multiple tags' criteria, the highest weighted will apply. 
+	-- Negative values disable the tag entirely
 )
 
 better_nametags.register_tag(
@@ -57,7 +84,7 @@ better_nametags.register_tag(
 	"sneaking", 
 	"#00000000",
 	function(player) 
-		return player:get_player_control().sneak
+		return better_nametags.allowSneak and player:get_player_control().sneak
 	end, 
 	function(player) 
 		return " "
