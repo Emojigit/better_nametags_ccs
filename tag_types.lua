@@ -43,13 +43,25 @@ better_nametags.register_tag(
 	-- Negative values disable the tag entirely
 )
 
+--worldedit
+better_nametags.register_tag(
+	"builder", 
+	"#0A70CF",
+	function(player) 
+		return minetest.check_player_privs(player, {worldedit=true}) end, 
+	function(player) 
+		return ("[Builder] "..player:get_player_name()) 
+	end,
+	97
+)
+
 better_nametags.register_tag(
 	"moderator", 
 	"#45C045",
 	function(player) 
 		return minetest.check_player_privs(player, {ban=true}) end, 
 	function(player) 
-		return ("[M] "..player:get_player_name()) 
+		return ("[Moderator] "..player:get_player_name()) 
 	end,
 	98
 )
@@ -61,7 +73,7 @@ better_nametags.register_tag(
 		return minetest.check_player_privs(player, {server=true}) 
 	end, 
 	function(player) 
-		return ("[A] "..player:get_player_name()) 
+		return ("[Admin] "..player:get_player_name()) 
 	end,
 	100
 )
